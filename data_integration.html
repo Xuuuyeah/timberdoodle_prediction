@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Yiran Xu" />
+
+<meta name="date" content="2024-11-25" />
+
+<title>Data Integration</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="data_wrangling.html">Data Wrangling</a>
+</li>
+<li>
+  <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="data_integration.html">Data Integration</a>
+</li>
+<li>
+  <a href="modeling.html">Modeling</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="mailto:&lt;xx2485@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/XiaoniXu/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Data Integration</h1>
+<h4 class="author">Yiran Xu</h4>
+<h4 class="date">2024-11-25</h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1>1. Introduction</h1>
+<p>The overall goal of this process is to get the weather information
+and land cover data at the places where observations occur, as these are
+hypothetical factors that may influence the distribution of
+timberdoodles. We use NOAA data to get the weather information (see
+details at <strong><a
+href="https://www.noaa.gov/">https://www.noaa.gov/</a>)</strong>, an use
+land cover data from <strong><a
+href="https://www.mrlc.gov/">Multi-Resolution Land Characteristics
+(MRLC) Consortium</a></strong>.</p>
+<p>However, the weather data are recorded by weather stations, which are
+not necessarily at the same place with bird observations. Therefore, we
+assign the nearest weather station within 50km to the places of
+observation. To realize the goal. We first merge the weather records
+from each weather station from 2019-2024 with the dataset indicating the
+location of each weather station by station id. Then we add the weather
+records from the nearest weather station to the bird observation dataset
+by date and location (i.e. latitude &amp; longitude).</p>
+<p>For land cover data, we use a tif file. To integrate the land cover
+data from the GeoTIFF raster file into the observation CSV file, the
+observation dataset was first converted into an sf spatial object using
+its longitude and latitude columns. Next, the coordinate reference
+system (CRS) of the sf object was aligned with the CRS of the raster
+file to ensure compatibility. Then, land cover values were extracted
+from the raster based on the observation coordinates. Finally, these
+extracted land cover values were added as a new column to the original
+dataset, which was then saved as a CSV file for further analysis.</p>
+</div>
+<div id="add-weather-data" class="section level1">
+<h1>2. Add weather data</h1>
+We started from the data like this:
+<div
+style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:300px; overflow-x: scroll; width:100%; ">
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+checklist_id
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+state
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+county
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+bcr_code
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+usfws_code
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+atlas_block
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+locality
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+latitude
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+longitude
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+observation_date
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+observer_id
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+protocol_type
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+duration_minutes
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+effort_distance_km
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+number_observers
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+all_species_reported
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+observation_count
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+effort_hours
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+effort_speed_kmph
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+hours_of_day
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+year
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+S60410856
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Schuyler
+</td>
+<td style="text-align:right;">
+28
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Steam Mill Rd, Odessa US-NY (42.3884a,-76.7621)
+</td>
+<td style="text-align:right;">
+42.388
+</td>
+<td style="text-align:right;">
+-76.762
+</td>
+<td style="text-align:left;">
+2019-10-06
+</td>
+<td style="text-align:left;">
+obsr295684
+</td>
+<td style="text-align:left;">
+Traveling
+</td>
+<td style="text-align:right;">
+50
+</td>
+<td style="text-align:right;">
+3.059
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+<td style="text-align:right;">
+3.671
+</td>
+<td style="text-align:right;">
+9.017
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S60411262
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Schuyler
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Montour Falls US-NY (42.3510,-76.8441)
+</td>
+<td style="text-align:right;">
+42.351
+</td>
+<td style="text-align:right;">
+-76.844
+</td>
+<td style="text-align:left;">
+2019-10-06
+</td>
+<td style="text-align:left;">
+obsr295684
+</td>
+<td style="text-align:left;">
+Traveling
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+1.609
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.867
+</td>
+<td style="text-align:right;">
+1.857
+</td>
+<td style="text-align:right;">
+11.250
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S60412070
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Steuben
+</td>
+<td style="text-align:right;">
+28
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Bradford at Old State Rd.
+</td>
+<td style="text-align:right;">
+42.364
+</td>
+<td style="text-align:right;">
+-77.112
+</td>
+<td style="text-align:left;">
+2019-10-06
+</td>
+<td style="text-align:left;">
+obsr295684
+</td>
+<td style="text-align:left;">
+Stationary
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.100
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+14.283
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S60412127
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Steuben
+</td>
+<td style="text-align:right;">
+28
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Bradford - Rabbit Rd (42.3642,-77.1180)
+</td>
+<td style="text-align:right;">
+42.364
+</td>
+<td style="text-align:right;">
+-77.118
+</td>
+<td style="text-align:left;">
+2019-10-06
+</td>
+<td style="text-align:left;">
+obsr295684
+</td>
+<td style="text-align:left;">
+Stationary
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.117
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+14.417
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S60412781
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Westchester
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Westchester Airport
+</td>
+<td style="text-align:right;">
+41.058
+</td>
+<td style="text-align:right;">
+-73.699
+</td>
+<td style="text-align:left;">
+2019-10-06
+</td>
+<td style="text-align:left;">
+obsr491576
+</td>
+<td style="text-align:left;">
+Stationary
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.083
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+16.333
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S60420563
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+Yates
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Penn Yan - Stiles Rd (42.6616,-77.0164)
+</td>
+<td style="text-align:right;">
+42.662
+</td>
+<td style="text-align:right;">
+-77.016
+</td>
+<td style="text-align:left;">
+2019-10-07
+</td>
+<td style="text-align:left;">
+obsr295684
+</td>
+<td style="text-align:left;">
+Stationary
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.017
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+8.583
+</td>
+<td style="text-align:right;">
+2019
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For weather data, we used two datasets:</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li><strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/">Yearly
+weather records data</a></strong>: The daily weather records from each
+weather station, including tmax (max temperature in degree Celsius),
+tmin (min temperature in degree Celsius), prcp (precipitation), snow
+(snow in mm), snwd (snow depth in mm)) from 2019-2024;</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li><strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">Station
+location data</a></strong>: A dataset match the station ids with
+locations (latitude, longitude)</li>
+</ol></li>
+</ul>
+<div id="merge-weather-and-location" class="section level3">
+<h3>1) Merge weather and location</h3>
+<p>Merge the observation location and the weather information with
+<strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/">Yearly
+weather records data</a></strong></p>
+<div id="a-extract-ny-stations" class="section level4">
+<h4>a) Extract NY stations</h4>
+<p>We use data from <strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">Station
+location data</a></strong> To reduce the time needed for matching
+process, we should filter station only in NY state from all
+stations.</p>
+<p>Part of the data is shown below:</p>
+<pre class="r"><code>stations_file = &quot;data/environmental_var/ghcnd-stations.txt&quot; 
+stations = read.table(stations_file, 
+                   header = FALSE, 
+                   sep = &quot;&quot;,         
+                   fill = TRUE,     
+                   stringsAsFactors = FALSE)
+colnames(stations) = c(&quot;id&quot;, &quot;latitude&quot;, &quot;longitude&quot;, &quot;elevation&quot;, &quot;state&quot;)
+
+# Select the first five columns and assign column names
+ny_stations = stations[, 1:5] |&gt;
+  filter(state == &quot;NY&quot;) |&gt;
+  mutate(latitude = as.numeric(latitude),
+         longitude = as.numeric(longitude))
+
+write.csv(ny_stations, &quot;data/environmental_var/ny_stations.csv&quot;, row.names = FALSE)
+
+ny_stations |&gt;
+  head() |&gt;
+  kable(digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="right">latitude</th>
+<th align="right">longitude</th>
+<th align="left">elevation</th>
+<th align="left">state</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">US1NYAB0001</td>
+<td align="right">42.667</td>
+<td align="right">-74.051</td>
+<td align="left">445.0</td>
+<td align="left">NY</td>
+</tr>
+<tr class="even">
+<td align="left">US1NYAB0006</td>
+<td align="right">42.720</td>
+<td align="right">-73.930</td>
+<td align="left">88.7</td>
+<td align="left">NY</td>
+</tr>
+<tr class="odd">
+<td align="left">US1NYAB0010</td>
+<td align="right">42.545</td>
+<td align="right">-74.147</td>
+<td align="left">488.3</td>
+<td align="left">NY</td>
+</tr>
+<tr class="even">
+<td align="left">US1NYAB0016</td>
+<td align="right">42.759</td>
+<td align="right">-73.737</td>
+<td align="left">104.2</td>
+<td align="left">NY</td>
+</tr>
+<tr class="odd">
+<td align="left">US1NYAB0017</td>
+<td align="right">42.668</td>
+<td align="right">-73.786</td>
+<td align="left">65.5</td>
+<td align="left">NY</td>
+</tr>
+<tr class="even">
+<td align="left">US1NYAB0021</td>
+<td align="right">42.681</td>
+<td align="right">-73.817</td>
+<td align="left">79.2</td>
+<td align="left">NY</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="b-extract-ny-weather-records" class="section level4">
+<h4>b) Extract NY weather records</h4>
+<p>Extract NY weather records from NY weather stations from <strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/">Yearly
+weather records data</a></strong></p>
+<p>The filtered and combined weather records data looks like this:</p>
+<pre><code>## Warning: One or more parsing issues, call `problems()` on your data frame for details,
+## e.g.:
+##   dat &lt;- vroom(...)
+##   problems(dat)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="18%" />
+<col width="13%" />
+<col width="12%" />
+<col width="9%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="right">date</th>
+<th align="left">element</th>
+<th align="right">value</th>
+<th align="left">m_flag</th>
+<th align="left">q_flag</th>
+<th align="left">s_flag</th>
+<th align="left">obs_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">TMAX</td>
+<td align="right">139</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">0700</td>
+</tr>
+<tr class="even">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">TMIN</td>
+<td align="right">-22</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">0700</td>
+</tr>
+<tr class="odd">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">TOBS</td>
+<td align="right">-22</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">0700</td>
+</tr>
+<tr class="even">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">PRCP</td>
+<td align="right">135</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">0700</td>
+</tr>
+<tr class="odd">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">SNOW</td>
+<td align="right">0</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">USC00308910</td>
+<td align="right">20190101</td>
+<td align="left">SNWD</td>
+<td align="right">0</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">7</td>
+<td align="left">0700</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div
+id="c-data-tidying-and-cleaning-transfer-the-numbers-to-their-correct-units.-then-join-location-data-and-weather-data"
+class="section level4">
+<h4>c) Data tidying and cleaning: transfer the numbers to their correct
+units. Then, join location data and weather data</h4>
+<pre class="r"><code>combined_data_wider = combined_data |&gt;
+  select(-m_flag, -q_flag, -s_flag, -obs_time) |&gt;
+  pivot_wider(
+    names_from = element,          
+    values_from = value) |&gt;
+  janitor::clean_names() |&gt;
+  mutate(prcp = prcp / 10,
+         tmax = tmax / 10,
+         tmin = tmin / 10,
+         t_avg = (tmin + tmax) / 2,
+         date = as.Date(as.character(date), format = &quot;%Y%m%d&quot;))
+
+write_csv(combined_data_wider, output_file)
+
+merged_coor_station = combined_data_wider %&gt;%  
+  left_join(ny_stations, by = c(&quot;id&quot; = &quot;id&quot;)) %&gt;%
+  select(id, date, latitude, longitude, tmax, tmin, prcp, snow, snwd, t_avg) 
+
+merged_coor_station |&gt;
+  head() |&gt;
+  kable(digits = 3)</code></pre>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="15%" />
+<col width="12%" />
+<col width="13%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">date</th>
+<th align="right">latitude</th>
+<th align="right">longitude</th>
+<th align="right">tmax</th>
+<th align="right">tmin</th>
+<th align="right">prcp</th>
+<th align="right">snow</th>
+<th align="right">snwd</th>
+<th align="right">t_avg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">USC00308910</td>
+<td align="left">2019-01-01</td>
+<td align="right">42.721</td>
+<td align="right">-78.544</td>
+<td align="right">13.9</td>
+<td align="right">-2.2</td>
+<td align="right">13.5</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5.85</td>
+</tr>
+<tr class="even">
+<td align="left">USC00308932</td>
+<td align="left">2019-01-01</td>
+<td align="right">42.185</td>
+<td align="right">-75.146</td>
+<td align="right">6.7</td>
+<td align="right">-8.3</td>
+<td align="right">14.0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">-0.80</td>
+</tr>
+<tr class="odd">
+<td align="left">USC00308962</td>
+<td align="left">2019-01-01</td>
+<td align="right">42.686</td>
+<td align="right">-78.220</td>
+<td align="right">11.7</td>
+<td align="right">-2.2</td>
+<td align="right">16.5</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">4.75</td>
+</tr>
+<tr class="even">
+<td align="left">USC00309000</td>
+<td align="left">2019-01-01</td>
+<td align="right">43.976</td>
+<td align="right">-75.875</td>
+<td align="right">10.0</td>
+<td align="right">-1.1</td>
+<td align="right">7.4</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">4.45</td>
+</tr>
+<tr class="odd">
+<td align="left">USC00309047</td>
+<td align="left">2019-01-01</td>
+<td align="right">42.002</td>
+<td align="right">-76.525</td>
+<td align="right">12.8</td>
+<td align="right">-2.8</td>
+<td align="right">8.9</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5.00</td>
+</tr>
+<tr class="even">
+<td align="left">USC00309049</td>
+<td align="left">2019-01-01</td>
+<td align="right">43.242</td>
+<td align="right">-77.388</td>
+<td align="right">11.7</td>
+<td align="right">-1.1</td>
+<td align="right">4.1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5.30</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="d-quality-control" class="section level4">
+<h4>d) Quality control</h4>
+<p>Not all weather station has records on every single day. Here we
+first filter out records with more than 1 (included) NA value in 4
+weather data we care about: prcp, snow, snwd, t_avg (calculated by
+average min and max temperature, will be NA if either tmin or tmax is
+NA)</p>
+<pre class="r"><code>filtered_coor_station = merged_coor_station %&gt;%
+  mutate(
+    na_count = rowSums(is.na(across(c(prcp, snow, snwd, t_avg)))) 
+  ) %&gt;%
+  filter(na_count &lt;= 0) %&gt;%  
+  select(-na_count) </code></pre>
+</div>
+</div>
+<div id="assign-nearest-station" class="section level3">
+<h3>2) Assign nearest station</h3>
+<div id="a-define-function" class="section level4">
+<h4>a) Define function</h4>
+<p>Assign nearest weather stations that have records on that specific
+day to each observation locations.</p>
+<p>As not all observation places have weather station nearby, and the
+weather is sensitive to location, we won’t assign a weather station to
+the observation places if there is no weather station within 50 km.</p>
+<pre class="r"><code>find_nearest_station_with_date = function(obs_lat, obs_lon, obs_date, weather_data, max_distance_km) {
+  daily_weather = weather_data %&gt;%
+    filter(date == obs_date)
+  
+  if (nrow(daily_weather) == 0) {
+    return(list(
+      nearest_station = NA,
+      distance = NA,
+      note = &quot;no record available&quot;,
+      tmax = NA,
+      tmin = NA,
+      prcp = NA,
+      snow = NA,
+      snwd = NA,
+      t_avg = NA
+    ))
+  }
+  
+  weather_coords = cbind(daily_weather$longitude, daily_weather$latitude)
+  obs_coords = matrix(c(obs_lon, obs_lat), nrow = 1)
+  distances = distHaversine(weather_coords, obs_coords) 
+  
+  min_distance = min(distances, na.rm = TRUE) / 1000 
+  nearest_index = which.min(distances)
+  
+  if (min_distance &gt; max_distance_km) {
+    return(list(
+      nearest_station = NA,
+      distance = min_distance,
+      note = &quot;no record available&quot;,
+      tmax = NA,
+      tmin = NA,
+      prcp = NA,
+      snow = NA,
+      snwd = NA,
+      t_avg = NA
+    ))
+  }
+  
+  nearest = daily_weather[nearest_index, ]
+  return(list(
+    nearest_station = nearest$id,
+    distance = min_distance,
+    note = &quot;record available&quot;,
+    tmax = nearest$tmax,
+    tmin = nearest$tmin,
+    prcp = nearest$prcp,
+    snow = nearest$snow,
+    snwd = nearest$snwd,
+    t_avg = nearest$t_avg
+  ))
+}</code></pre>
+</div>
+<div id="b-apply-function" class="section level4">
+<h4>b) Apply function</h4>
+<p>This function applies GPU to accelerate the process. Observation
+records with weather information looks like this:</p>
+<pre class="r"><code>max_distance_km = 50
+
+num_cores = detectCores() - 2 
+cl = makeCluster(num_cores)
+
+process_observation = function(row_index, obs_data, weather_data, max_distance_km) {
+  obs = obs_data[row_index, ] 
+  weather_info = find_nearest_station_with_date(
+    obs_lat = obs$latitude,
+    obs_lon = obs$longitude,
+    obs_date = obs$observation_date,
+    weather_data = weather_data,
+    max_distance_km = max_distance_km
+  )
+  cbind(obs, as.data.frame(weather_info))
+}
+
+clusterExport(cl, c(&quot;find_nearest_station_with_date&quot;, &quot;filtered_coor_station&quot;, &quot;zf_filtered_df&quot;, &quot;max_distance_km&quot;, &quot;process_observation&quot;))
+clusterEvalQ(cl, {
+  library(dplyr)
+  library(geosphere)
+})
+
+results = pblapply(
+  seq_len(nrow(zf_filtered_df)), 
+  function(i) {
+    process_observation(i, obs_data = zf_filtered_df, weather_data = filtered_coor_station, max_distance_km = max_distance_km)
+  },
+  cl = cl
+)
+
+stopCluster(cl)
+
+zf_with_weather = bind_rows(results)
+
+write_csv(zf_with_weather, &quot;data/zf_with_weather.csv&quot;)
+
+head(zf_with_weather) |&gt;
+  kable(digits = 3)</code></pre>
+</div>
+</div>
+</div>
+<div id="add-land-cover-data" class="section level1">
+<h1>3. Add Land Cover Data</h1>
+<p>The data was retrieved from <strong><a
+href="https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover">Multi-Resolution
+Land Characteristics (MRLC) Consortium</a></strong>, data from 2023 was
+used.</p>
+<p>Observation records with weather and land cover information looks
+like this:</p>
+<pre class="r"><code>zf_with_weather = read.csv(&quot;data/environmental_var/zf_with_weather.csv&quot;)
+zf_with_weather$lon = zf_with_weather$longitude
+zf_with_weather$lat = zf_with_weather$latitude
+
+landcover_raw = rast(&quot;data/environmental_var/lc_rast.tif&quot;)
+
+zf_with_weather_sf = st_as_sf(zf_with_weather, coords = c(&quot;longitude&quot;, &quot;latitude&quot;), crs = 4326)
+
+if (!st_crs(zf_with_weather_sf) == crs(landcover_raw)) {
+zf_with_weather_sf = st_transform(zf_with_weather_sf, crs(landcover_raw))
+}
+
+
+zf_with_weather_vect = vect(zf_with_weather_sf)
+
+extracted_values = terra::extract(landcover_raw, zf_with_weather_vect)
+
+zf_with_weather_sf$landcover = extracted_values[,2] 
+
+write.csv(st_drop_geometry(zf_with_weather_sf), &quot;data/environmental_var/zf_with_weather_landcover.csv&quot;, row.names = FALSE)
+
+head(st_drop_geometry(zf_with_weather_sf)) |&gt;
+  kable(digits = 3)</code></pre>
+<table>
+<colgroup>
+<col width="3%" />
+<col width="2%" />
+<col width="3%" />
+<col width="2%" />
+<col width="2%" />
+<col width="3%" />
+<col width="12%" />
+<col width="4%" />
+<col width="3%" />
+<col width="3%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="5%" />
+<col width="4%" />
+<col width="3%" />
+<col width="4%" />
+<col width="3%" />
+<col width="1%" />
+<col width="4%" />
+<col width="2%" />
+<col width="4%" />
+<col width="1%" />
+<col width="1%" />
+<col width="1%" />
+<col width="1%" />
+<col width="1%" />
+<col width="1%" />
+<col width="2%" />
+<col width="1%" />
+<col width="2%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">checklist_id</th>
+<th align="left">state</th>
+<th align="left">county</th>
+<th align="right">bcr_code</th>
+<th align="left">usfws_code</th>
+<th align="left">atlas_block</th>
+<th align="left">locality</th>
+<th align="left">observation_date</th>
+<th align="left">observer_id</th>
+<th align="left">protocol_type</th>
+<th align="right">duration_minutes</th>
+<th align="right">effort_distance_km</th>
+<th align="right">number_observers</th>
+<th align="left">all_species_reported</th>
+<th align="right">observation_count</th>
+<th align="right">effort_hours</th>
+<th align="right">effort_speed_kmph</th>
+<th align="right">hours_of_day</th>
+<th align="right">year</th>
+<th align="left">nearest_station</th>
+<th align="right">distance</th>
+<th align="left">note</th>
+<th align="right">tmax</th>
+<th align="right">tmin</th>
+<th align="right">prcp</th>
+<th align="right">snow</th>
+<th align="right">snwd</th>
+<th align="right">t_avg</th>
+<th align="right">lon</th>
+<th align="right">lat</th>
+<th align="right">landcover</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">S60410856</td>
+<td align="left">New York</td>
+<td align="left">Schuyler</td>
+<td align="right">28</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Steam Mill Rd, Odessa US-NY (42.3884a,-76.7621)</td>
+<td align="left">2019-10-06</td>
+<td align="left">obsr295684</td>
+<td align="left">Traveling</td>
+<td align="right">50</td>
+<td align="right">3.059</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.833</td>
+<td align="right">3.671</td>
+<td align="right">9.017</td>
+<td align="right">2019</td>
+<td align="left">USC00304174</td>
+<td align="right">26.591</td>
+<td align="left">record available</td>
+<td align="right">14.4</td>
+<td align="right">-1.7</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6.35</td>
+<td align="right">-76.762</td>
+<td align="right">42.388</td>
+<td align="right">22</td>
+</tr>
+<tr class="even">
+<td align="left">S60411262</td>
+<td align="left">New York</td>
+<td align="left">Schuyler</td>
+<td align="right">13</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Montour Falls US-NY (42.3510,-76.8441)</td>
+<td align="left">2019-10-06</td>
+<td align="left">obsr295684</td>
+<td align="left">Traveling</td>
+<td align="right">52</td>
+<td align="right">1.609</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.867</td>
+<td align="right">1.857</td>
+<td align="right">11.250</td>
+<td align="right">2019</td>
+<td align="left">US1NYCM0021</td>
+<td align="right">27.730</td>
+<td align="left">record available</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">-76.844</td>
+<td align="right">42.351</td>
+<td align="right">81</td>
+</tr>
+<tr class="odd">
+<td align="left">S60412070</td>
+<td align="left">New York</td>
+<td align="left">Steuben</td>
+<td align="right">28</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Bradford at Old State Rd.</td>
+<td align="left">2019-10-06</td>
+<td align="left">obsr295684</td>
+<td align="left">Stationary</td>
+<td align="right">6</td>
+<td align="right">0.000</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.100</td>
+<td align="right">0.000</td>
+<td align="right">14.283</td>
+<td align="right">2019</td>
+<td align="left">USC00300023</td>
+<td align="right">30.879</td>
+<td align="left">record available</td>
+<td align="right">16.1</td>
+<td align="right">1.7</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8.90</td>
+<td align="right">-77.112</td>
+<td align="right">42.364</td>
+<td align="right">23</td>
+</tr>
+<tr class="even">
+<td align="left">S60412127</td>
+<td align="left">New York</td>
+<td align="left">Steuben</td>
+<td align="right">28</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Bradford - Rabbit Rd (42.3642,-77.1180)</td>
+<td align="left">2019-10-06</td>
+<td align="left">obsr295684</td>
+<td align="left">Stationary</td>
+<td align="right">7</td>
+<td align="right">0.000</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.117</td>
+<td align="right">0.000</td>
+<td align="right">14.417</td>
+<td align="right">2019</td>
+<td align="left">USC00300023</td>
+<td align="right">30.789</td>
+<td align="left">record available</td>
+<td align="right">16.1</td>
+<td align="right">1.7</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8.90</td>
+<td align="right">-77.118</td>
+<td align="right">42.364</td>
+<td align="right">22</td>
+</tr>
+<tr class="odd">
+<td align="left">S60412781</td>
+<td align="left">New York</td>
+<td align="left">Westchester</td>
+<td align="right">30</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Westchester Airport</td>
+<td align="left">2019-10-06</td>
+<td align="left">obsr491576</td>
+<td align="left">Stationary</td>
+<td align="right">5</td>
+<td align="right">0.000</td>
+<td align="right">2</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.083</td>
+<td align="right">0.000</td>
+<td align="right">16.333</td>
+<td align="right">2019</td>
+<td align="left">US1NYWC0018</td>
+<td align="right">8.094</td>
+<td align="left">record available</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">-73.699</td>
+<td align="right">41.058</td>
+<td align="right">23</td>
+</tr>
+<tr class="even">
+<td align="left">S60420563</td>
+<td align="left">New York</td>
+<td align="left">Yates</td>
+<td align="right">13</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Penn Yan - Stiles Rd (42.6616,-77.0164)</td>
+<td align="left">2019-10-07</td>
+<td align="left">obsr295684</td>
+<td align="left">Stationary</td>
+<td align="right">1</td>
+<td align="right">0.000</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">0</td>
+<td align="right">0.017</td>
+<td align="right">0.000</td>
+<td align="right">8.583</td>
+<td align="right">2019</td>
+<td align="left">USC00303184</td>
+<td align="right">23.975</td>
+<td align="left">record available</td>
+<td align="right">18.9</td>
+<td align="right">11.1</td>
+<td align="right">22.1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">15.00</td>
+<td align="right">-77.016</td>
+<td align="right">42.662</td>
+<td align="right">22</td>
+</tr>
+</tbody>
+</table>
+<p>Note: the categorical land cover variables are presented as numbers.
+The detailed classification description is shown below, and the source
+can be found <strong><a
+href="https://www.mrlc.gov/data/legends/national-land-cover-database-class-legend-and-description">here</a></strong>:</p>
+<pre class="r"><code>landcover_classes = data.frame(
+  Code = c(&#39;11&#39;, &#39;12&#39;, &#39;21&#39;, &#39;22&#39;, &#39;23&#39;, &#39;24&#39;, &#39;31&#39;, &#39;41&#39;, &#39;42&#39;, &#39;43&#39;, 
+           &#39;52&#39;, &#39;71&#39;, &#39;81&#39;, &#39;82&#39;, &#39;90&#39;, &#39;95&#39;),
+  Description = c(
+    &#39;Open Water&#39;,
+    &#39;Perennial Ice/Snow&#39;,
+    &#39;Developed, Open Space&#39;,
+    &#39;Developed, Low Intensity&#39;,
+    &#39;Developed, Medium Intensity&#39;,
+    &#39;Developed, High Intensity&#39;,
+    &#39;Barren Land (Rock/Sand/Clay)&#39;,
+    &#39;Deciduous Forest&#39;,
+    &#39;Evergreen Forest&#39;,
+    &#39;Mixed Forest&#39;,
+    &#39;Shrub/Scrub&#39;,
+    &#39;Grassland/Herbaceous&#39;,
+    &#39;Pasture/Hay&#39;,
+    &#39;Cultivated Crops&#39;,
+    &#39;Woody Wetlands&#39;,
+    &#39;Emergent Herbaceous Wetlands&#39;
+  )
+)
+
+kable(landcover_classes, col.names = c(&quot;Landcover Code&quot;, &quot;Landcover Description&quot;),
+      caption = &quot;Landcover Classification Table&quot;)</code></pre>
+<table>
+<caption>Landcover Classification Table</caption>
+<thead>
+<tr class="header">
+<th align="left">Landcover Code</th>
+<th align="left">Landcover Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">Open Water</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">Perennial Ice/Snow</td>
+</tr>
+<tr class="odd">
+<td align="left">21</td>
+<td align="left">Developed, Open Space</td>
+</tr>
+<tr class="even">
+<td align="left">22</td>
+<td align="left">Developed, Low Intensity</td>
+</tr>
+<tr class="odd">
+<td align="left">23</td>
+<td align="left">Developed, Medium Intensity</td>
+</tr>
+<tr class="even">
+<td align="left">24</td>
+<td align="left">Developed, High Intensity</td>
+</tr>
+<tr class="odd">
+<td align="left">31</td>
+<td align="left">Barren Land (Rock/Sand/Clay)</td>
+</tr>
+<tr class="even">
+<td align="left">41</td>
+<td align="left">Deciduous Forest</td>
+</tr>
+<tr class="odd">
+<td align="left">42</td>
+<td align="left">Evergreen Forest</td>
+</tr>
+<tr class="even">
+<td align="left">43</td>
+<td align="left">Mixed Forest</td>
+</tr>
+<tr class="odd">
+<td align="left">52</td>
+<td align="left">Shrub/Scrub</td>
+</tr>
+<tr class="even">
+<td align="left">71</td>
+<td align="left">Grassland/Herbaceous</td>
+</tr>
+<tr class="odd">
+<td align="left">81</td>
+<td align="left">Pasture/Hay</td>
+</tr>
+<tr class="even">
+<td align="left">82</td>
+<td align="left">Cultivated Crops</td>
+</tr>
+<tr class="odd">
+<td align="left">90</td>
+<td align="left">Woody Wetlands</td>
+</tr>
+<tr class="even">
+<td align="left">95</td>
+<td align="left">Emergent Herbaceous Wetlands</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

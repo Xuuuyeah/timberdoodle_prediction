@@ -1,0 +1,26 @@
+---
+title: "P8105 Final Project Proposal" 
+date: "2024-11-06"
+output: pdf_document
+---
+
+### 1. The group members (names and UNIs) (alphabetical order):
+Zhengyong Chen (zc2822), Boxiang Tang (bt2654), Wenjie Wu (ww2744), Xiaoni Xu (xx2485), Yiran Xu (yx2954)
+
+### 2. The tentative project title:
+The Migration and Distribution Pattern of Birds in New York State
+
+### 3. The motivation for this project:
+The migration pattern of birds offers a unique window into the health and dynamics of ecosystems. By creating multiple panels showing the frequency, geo-location, species count with time, this project could contribute to a better understanding of ecological shifts and inform strategies to protect bird populations.
+
+### 4. The intended final products:
+A web page with animations showing the density of selected birds with time and migration patterns in New York State.
+
+### 5. The anticipated data sources:
+Citizen science data on eBird, an online platform to submit bird observations developed by Cornell Lab of Ornithology, will be used. The raw observation data including location, time, breeding codes, and other factors is requested on (https://science.ebird.org/en/use-ebird-data). R packages developed by eBird for data visualization of status and trends of species will be used (https://ebird.github.io/ebirdst/).
+
+### 6. The planned analyses / visualizations / coding challenges:
+a) Request for raw data permission from eBird, read and understand the raw data; b) Changing the raw data type (i.e., original data document is .txt), raw data cleaning and processing; c) Spatial data manipulation & Environmental data integration; d) Times-Series analysis; e) Define proper visualization methods; f) Git-hub R package for interactive dynamic migration & distribution map; g) Temporal distribution & Spatial distribution & Migratory patterns analysis
+
+### 7. The planned timeline:
+Access and download eBird raw data by **11/8**; Formalize detailed ideas and topic by **11/11**; Data screening, cleaning, and filtering by **11/15**; Data analysis and visualization by **11/22**; Webpage development by **12/7**; Presentation (2 min video) by **12/7**.

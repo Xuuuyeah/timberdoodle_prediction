@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Wenjie Wu" />
+
+
+<title>Prediction Modeling</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="data_wrangling.html">Data Wrangling</a>
+</li>
+<li>
+  <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="modeling.html">Modeling</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="mailto:&lt;xx2485@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/XiaoniXu/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Prediction Modeling</h1>
+<h4 class="author">Wenjie Wu</h4>
+
+</div>
+
+
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</p>
+<div id="introduction-and-objcetive" class="section level1">
+<h1>Introduction and Objcetive</h1>
+<p>The primary goal of this section is to conduct a modeling analysis on
+the existing dataset. By leveraging environmental variables such as
+latitude, longitude, temperature, and snowfall, we aim to train
+regression models and ultimately generate a predictive heatmap
+highlighting the likelihood of observing American Woodcock in New York
+State.</p>
+</div>
+<div id="data-preprocessing" class="section level1">
+<h1>Data preprocessing</h1>
+<p>The dataset used in this analysis includes eBird data previously
+collected and augmented with relevant environmental variables. To derive
+the observation ratio for subsequent modeling, we implemented the
+following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Variable Grouping and Flagging: • The average temperature (t_avg)
+was grouped at intervals of 1°C.</p>
+<p>• Snowfall (snow) was grouped at intervals of 5 units.</p>
+<p>• For each grouped range, corresponding flag variables were
+created.</p></li>
+<li><p>Observation Counting: • For observations within the same flag
+(representing similar environmental conditions), we calculated the count
+of American Woodcock observed.</p>
+<p>• This count was divided by the total observations to compute the
+dependent variable for the regression model, obs_ratio, representing the
+proportion of observations under the given conditions.</p></li>
+</ol>
+<pre class="r"><code>weather_df &lt;- read_csv(&quot;data/zf_with_weather_landcover.csv&quot;) |&gt;
+   filter(!is.na(t_avg)) |&gt;
+   filter(!is.na(landcover)) |&gt;
+    mutate(t_avg_flag = as.integer((t_avg - min(t_avg, na.rm = TRUE)) / 1)) |&gt;
+    mutate(snow_flag = as.integer((snow - min(snow, na.rm = TRUE)) / 5))</code></pre>
+<pre><code>## Rows: 1699258 Columns: 31
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (10): checklist_id, state, county, usfws_code, atlas_block, locality, o...
+## dbl  (19): bcr_code, duration_minutes, effort_distance_km, number_observers,...
+## lgl   (1): all_species_reported
+## date  (1): observation_date
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>weather_df &lt;-  weather_df |&gt;
+  group_by(t_avg_flag, snow_flag) |&gt;
+  mutate(
+    group_obs_count = n(),  
+    total_obs_count = nrow(weather_df),  
+    obs_ratio = group_obs_count / total_obs_count  
+  ) |&gt;
+  ungroup()</code></pre>
+</div>
+<div id="modeling-results" class="section level1">
+<h1>Modeling results</h1>
+<p>All predictors (tmax, tmin, prcp, snow, snwd, landcover, lon, and
+lat) show statistically significant contributions to the model at the
+0.001 significance level (p &lt; 0.001), indicated by their respective
+t-values and small p-values.</p>
+<p>Temperature extremes (tmax and tmin) have significant but opposing
+effects, with higher maximum temperatures increasing the likelihood of
+observations and lower minimum temperatures reducing it.</p>
+<p>Snowfall (snow) and snow depth (snwd) negatively impact observations,
+aligning with ecological expectations that severe winter conditions
+limit sightings.</p>
+<pre class="r"><code>lm_model = lm(obs_ratio ~ tmax + tmin + prcp + snow + snwd + landcover + lon + lat, data = weather_df)
+
+summary(lm_model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = obs_ratio ~ tmax + tmin + prcp + snow + snwd + landcover + 
+##     lon + lat, data = weather_df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.04057 -0.00433  0.00174  0.00791  0.50354 
+## 
+## Coefficients:
+##               Estimate Std. Error  t value Pr(&gt;|t|)    
+## (Intercept)  3.693e-02  5.573e-04   66.270  &lt; 2e-16 ***
+## tmax         5.119e-04  2.913e-06  175.717  &lt; 2e-16 ***
+## tmin        -9.125e-05  3.236e-06  -28.199  &lt; 2e-16 ***
+## prcp         4.910e-05  1.613e-06   30.440  &lt; 2e-16 ***
+## snow        -1.548e-04  9.593e-07 -161.338  &lt; 2e-16 ***
+## snwd        -4.819e-05  2.424e-07 -198.792  &lt; 2e-16 ***
+## landcover    4.915e-06  5.020e-07    9.790  &lt; 2e-16 ***
+## lon          1.572e-04  8.875e-06   17.712  &lt; 2e-16 ***
+## lat         -6.145e-05  1.469e-05   -4.184 2.86e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.009615 on 669934 degrees of freedom
+##   (17023 observations deleted due to missingness)
+## Multiple R-squared:  0.3359, Adjusted R-squared:  0.3359 
+## F-statistic: 4.236e+04 on 8 and 669934 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="griding-for-ny-state" class="section level1">
+<h1>Griding for NY state</h1>
+<p>Making boundary for NY state, preparing for ploting heating map. We
+applied grid operations to the map of New York State, dividing it into
+grids to more precisely identify bird observation locations and simulate
+real-world conditions. After multiple adjustments, a grid size of 0.1
+was selected as the optimal scale.</p>
+<pre class="r"><code>ny_boundary &lt;- st_make_valid(ny_boundary)
+
+grid_size &lt;- 0.1  
+
+ny_grid &lt;- st_make_grid(
+  ny_boundary,
+  cellsize = grid_size,
+  square = TRUE
+) |&gt; 
+  st_as_sf()  
+
+
+ny_grid &lt;- st_intersection(ny_grid, ny_boundary) |&gt;
+ st_make_valid()</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout
+## all geometries</code></pre>
+<pre class="r"><code>ggplot() +
+  geom_sf(data = ny_boundary, fill = NA, color = &quot;black&quot;) +  
+  geom_sf(data = ny_grid, fill = &quot;blue&quot;, alpha = 0.3) +      
+  labs(
+    title = &quot;Grid Verification on New York Map&quot;,
+    x = &quot;Longitude&quot;,
+    y = &quot;Latitude&quot;
+  )</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="prediction-data-simulation" class="section level1">
+<h1>Prediction data simulation</h1>
+<p>For continuous variables such as tmax, tmin, snow, and snwd, we
+fitted their distributions based on the original data and generated
+simulated prediction data within the 95% confidence interval. Realistic
+constraints were also incorporated, such as ensuring tmax is always
+greater than tmin, southern regions having higher temperatures than
+northern regions, and snowfall being lower in southern areas compared to
+the north.</p>
+<p>Within each generated grid, 1,000 data points were simulated, with
+their latitude and longitude constrained to lie within the respective
+grid boundaries. Using the previously trained regression model, we
+predicted the observation ratio (obs_ratio) for each point and summed
+these values to obtain the total observation probability for each grid.
+Additionally, realistic landcover data were assigned to each grid based
+on its geographic location, further enhancing the accuracy and realism
+of the simulated data to align with actual conditions.</p>
+<pre class="r"><code>ny_grid &lt;- ny_grid |&gt; st_make_valid()
+
+set.seed(42)  
+sampled_points &lt;- ny_grid |&gt; 
+  st_sample(size = 1000, type = &quot;random&quot;) |&gt;  
+  st_as_sf() |&gt;  
+  st_join(ny_grid)  
+
+weather_stats &lt;- weather_df |&gt;
+  summarise(
+    tmax_mean = mean(tmax, na.rm = TRUE),
+    tmax_sd = sd(tmax, na.rm = TRUE),
+    tmax_ci_low = quantile(tmax, probs = 0.025, na.rm = TRUE),
+    tmax_ci_high = quantile(tmax, probs = 0.975, na.rm = TRUE),
+    
+    tmin_mean = mean(tmin, na.rm = TRUE),
+    tmin_sd = sd(tmin, na.rm = TRUE),
+    tmin_ci_low = quantile(tmin, probs = 0.025, na.rm = TRUE),
+    tmin_ci_high = quantile(tmin, probs = 0.975, na.rm = TRUE),
+    
+    prcp_mean = mean(prcp, na.rm = TRUE),
+    prcp_sd = sd(prcp, na.rm = TRUE),
+    prcp_ci_low = quantile(prcp, probs = 0.025, na.rm = TRUE),
+    prcp_ci_high = quantile(prcp, probs = 0.975, na.rm = TRUE),
+    
+    snow_mean = mean(snow, na.rm = TRUE),
+    snow_sd = sd(snow, na.rm = TRUE),
+    snow_ci_low = quantile(snow, probs = 0.025, na.rm = TRUE),
+    snow_ci_high = quantile(snow, probs = 0.975, na.rm = TRUE),
+    
+    snwd_mean = mean(snwd, na.rm = TRUE),
+    snwd_sd = sd(snwd, na.rm = TRUE),
+    snwd_ci_low = quantile(snwd, probs = 0.025, na.rm = TRUE),
+    snwd_ci_high = quantile(snwd, probs = 0.975, na.rm = TRUE)
+  )
+
+predict_data &lt;- ny_grid |&gt; 
+  st_sample(size = 1000, type = &quot;random&quot;) |&gt;  
+  st_as_sf() |&gt; 
+  st_coordinates() |&gt; 
+  as.data.frame() |&gt; 
+  rename(lon = X, lat = Y)  
+
+predict_data &lt;- predict_data |&gt;
+  mutate(
+    tmin = runif(n(), min = weather_stats$tmin_ci_low, max = weather_stats$tmin_ci_high),
+    tmax = tmin + runif(n(), min = 1, max = weather_stats$tmax_ci_high - weather_stats$tmax_ci_low),
+    
+    prcp = runif(n(), min = weather_stats$prcp_ci_low, max = weather_stats$prcp_ci_high),
+    snow = runif(n(), min = weather_stats$snow_ci_low, max = weather_stats$snow_ci_high),
+    snwd = runif(n(), min = weather_stats$snwd_ci_low, max = weather_stats$snwd_ci_high),
+    
+    landcover = sample(c(21, 22, 23, 24), n(), replace = TRUE)
+  )</code></pre>
+<pre class="r"><code>predict_data$longitude &lt;- predict_data$lon
+predict_data$latitude &lt;- predict_data$lat
+
+landcover_raw &lt;- terra::rast(&quot;data/Annual_NLCD_LndCov_2023_CU_C1V0.tif&quot;)
+predict_data_sf &lt;- st_as_sf(predict_data, coords = c(&quot;longitude&quot;, &quot;latitude&quot;), crs = 4326)
+
+if (!st_crs(predict_data_sf) == crs(landcover_raw)) {
+  predict_data_sf &lt;- st_transform(predict_data_sf, crs(landcover_raw))
+}
+
+
+predict_data_vect &lt;- vect(predict_data_sf)
+
+extracted_values &lt;- terra::extract(landcover_raw, predict_data_vect)
+
+predict_data_sf$landcover &lt;- extracted_values[,2] 
+
+predict_data_final = st_drop_geometry(predict_data_sf)</code></pre>
+<pre class="r"><code>predict_data_final$obs_ratio &lt;- predict(lm_model, newdata = predict_data_final)</code></pre>
+<pre class="r"><code>grid_predictions &lt;- st_join(ny_grid, st_as_sf(predict_data_final, coords = c(&quot;lon&quot;, &quot;lat&quot;), crs = st_crs(ny_grid))) |&gt;
+  group_by(x) |&gt;
+  summarise(
+    prob_sum = sum(obs_ratio, na.rm = TRUE), 
+    prob_mean = mean(obs_ratio, na.rm = TRUE)  
+  ) |&gt; 
+  ungroup()</code></pre>
+</div>
+<div id="predcting-results-display" class="section level1">
+<h1>Predcting results display</h1>
+<p>The observation probabilities of the American woodcock are displayed
+in the form of a heatmap.</p>
+<pre class="r"><code>ggplot() +
+  geom_sf(data = ny_boundary, fill = NA, color = &quot;black&quot;) +  
+  geom_sf(data = grid_predictions, aes(fill = prob_sum), color = NA, alpha = 0.8) +
+  scale_fill_viridis_c(option = &quot;plasma&quot;, name = &quot;Probability Sum&quot;) + 
+  labs(
+    title = &quot;Heatmap of Predicted Observation Ratios&quot;,
+    x = &quot;Longitude&quot;,
+    y = &quot;Latitude&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="model-optimization" class="section level1">
+<h1>Model Optimization</h1>
+<div id="lasso-regression" class="section level2">
+<h2>Lasso Regression</h2>
+<p><em>LASSO (Least Absolute Shrinkage and Selection Operator)</em> is a
+regression method that performs variable selection and regularization to
+enhance prediction accuracy. It adds a penalty term $ _{j=1}^{p} |_j| $
+to the regression model, encouraging some coefficients to shrink to
+exactly zero. The optimization problem can be summarized as:</p>
+<p><span class="math display">\[
+\frac{1}{2n} \sum_{i=1}^{n} \left( y_i - \beta_0 - \sum_{j=1}^{p} x_{ij}
+\beta_j \right)^2 + \lambda \sum_{j=1}^{p} |\beta_j|
+\]</span></p>
+<p>where $ $ is the tuning parameter that controls the trade-off between
+model complexity and accuracy. As $ $ increases, more coefficients are
+penalized and shrink toward zero.</p>
+<pre class="r"><code># Preparing &amp; checking data for the lasso
+sum(is.na(weather_df$obs_ratio)) 
+sum(is.na(weather_df$tmax))
+sum(is.na(weather_df$tmin))
+sum(is.na(weather_df$prcp))
+sum(is.na(weather_df$snow))
+sum(is.na(weather_df$snwd))
+sum(is.na(weather_df$landcover))
+
+weather_df &lt;- weather_df |&gt; drop_na(obs_ratio, tmax, tmin, prcp, snow, snwd, landcover)
+x &lt;- model.matrix(obs_ratio ~ tmax + tmin + prcp + snow + snwd + landcover, data = weather_df)[, -1]
+y &lt;- weather_df$obs_ratio
+
+nrow(x) == length(y) </code></pre>
+<pre class="r"><code># Prepare the dataset
+# Convert the predictor variables into a matrix and remove intercept
+x &lt;- model.matrix(obs_ratio ~ tmax + tmin + prcp + snow + snwd + landcover, data = weather_df)[, -1]
+
+# Extract the response variable
+y &lt;- weather_df$obs_ratio
+
+# Fit the Lasso regression model
+lasso_fit &lt;- glmnet(x, y, alpha = 1)
+
+# Perform cross-validation to find the optimal lambda
+cv_lasso &lt;- cv.glmnet(x, y, alpha = 1)
+best_lambda &lt;- cv_lasso$lambda.min  # The optimal lambda value
+
+
+# Visualize the Lasso regression path
+# Prepare data for visualization of coefficient paths
+lasso_df &lt;- broom::tidy(lasso_fit) %&gt;%
+  filter(term != &quot;(Intercept)&quot;) %&gt;%  # Remove intercept from visualization
+  mutate(log_lambda = log(lambda, base = 10))  # Log-transform lambda for plotting
+
+# Plot Lasso regression path
+ggplot(lasso_df, aes(x = log_lambda, y = estimate, color = term)) +
+  geom_line() +
+  geom_vline(xintercept = log(best_lambda, base = 10), linetype = &quot;dashed&quot;, color = &quot;blue&quot;) +
+  labs(
+    title = &quot;Lasso Regression Path&quot;,
+    x = &quot;log(lambda)&quot;,
+    y = &quot;Coefficient Estimate&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code># Additional plot similar to the provided example
+cv_lasso %&gt;%
+  broom::tidy() %&gt;%
+  ggplot(aes(x = log(lambda, 10), y = estimate)) +
+  geom_point() +
+  labs(
+    title = &quot;Lasso Coefficient Estimates vs Lambda&quot;,
+    x = &quot;log(lambda)&quot;,
+    y = &quot;Coefficient Estimate&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-11-2.png" width="672" /></p>
+<div id="lasso-regression-path-plot" class="section level3">
+<h3>1. Lasso Regression Path Plot:</h3>
+<ul>
+<li><p><strong>How to Read:</strong></p>
+<ul>
+<li>Each line shows how a predictor’s coefficient changes as $ () $
+varies. The vertical dashed line indicates the optimal $ $.</li>
+</ul></li>
+<li><p><strong>Key Patterns:</strong></p>
+<ul>
+<li>As $ $ increases, most coefficients shrink to zero.</li>
+<li>Predictors like tmax and snow retain larger coefficients over a
+wider range of $ $, indicating their importance.</li>
+<li>Less significant variables like landcover are penalized early.</li>
+</ul></li>
+</ul>
+<hr />
+</div>
+<div id="lasso-coefficient-estimates-scatter-plot"
+class="section level3">
+<h3>2. Lasso Coefficient Estimates Scatter Plot:</h3>
+<ul>
+<li><p><strong>How to Read:</strong></p>
+<ul>
+<li>Each dot represents a coefficient value at a specific $ () $.</li>
+</ul></li>
+<li><p><strong>Key Patterns:</strong></p>
+<ul>
+<li>At higher regularization (low $ () $), coefficients are close to
+zero.</li>
+<li>Significant predictors like tmax and snow dominate as $ $
+decreases.</li>
+</ul></li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="rdige-regression" class="section level2">
+<h2>Rdige Regression</h2>
+<p>Similar to Lasso, Ridge Regression is a regression method that
+introduces a penalty term to reduce overfitting and improve model
+generalization. It adds a $ L_2 $ (not $ L_1 $) penalty term $
+_{j=1}^{p} _j^2 $ to the regression model, which shrinks all
+coefficients proportionally but does not force them to zero. The
+optimization problem is given by:</p>
+<p><span class="math display">\[
+\frac{1}{2n} \sum_{i=1}^{n} \left( y_i - \beta_0 - \sum_{j=1}^{p} x_{ij}
+\beta_j \right)^2 + \lambda \sum_{j=1}^{p} \beta_j^2
+\]</span></p>
+<p>where $ $ is the tuning parameter controlling the regularization
+strength. Higher $ $ values reduce the model complexity by shrinking
+coefficients closer to zero, but no coefficients are entirely
+eliminated.</p>
+<hr />
+<p><strong>Comparison of Ridge and LASSO:</strong></p>
+<ul>
+<li><p><strong>Similarities:</strong></p>
+<ul>
+<li>Both use regularization to prevent overfitting and reduce model
+complexity.</li>
+<li>Both introduce a penalty term to the loss function and require
+tuning of $ $ to control regularization strength.</li>
+</ul></li>
+<li><p><strong>Differences:</strong></p>
+<ul>
+<li>Ridge uses $ L_2 $ regularization, penalizing the sum of squared
+coefficients, while LASSO uses $ L_1 $ regularization, penalizing the
+sum of absolute coefficients.</li>
+<li>Ridge does not force coefficients to zero, meaning all variables
+remain in the model, whereas LASSO can shrink some coefficients to
+exactly zero, performing variable selection.</li>
+</ul></li>
+</ul>
+<pre class="r"><code># Prepare the dataset
+x &lt;- model.matrix(obs_ratio ~ tmax + tmin + prcp + snow + snwd + landcover, data = weather_df)[, -1]
+y &lt;- weather_df$obs_ratio
+
+# Fit the Ridge regression model (alpha = 0 for Ridge)
+ridge_fit &lt;- glmnet(x, y, alpha = 0)
+
+# Perform cross-validation to find the optimal lambda
+cv_ridge &lt;- cv.glmnet(x, y, alpha = 0)
+best_lambda_ridge &lt;- cv_ridge$lambda.min  # Optimal lambda for Ridge
+
+
+# Visualize Ridge regression path
+ridge_df &lt;- broom::tidy(ridge_fit) %&gt;%
+  filter(term != &quot;(Intercept)&quot;) %&gt;%
+  mutate(log_lambda = log(lambda, base = 10))
+
+ggplot(ridge_df, aes(x = log_lambda, y = estimate, color = term)) +
+  geom_line() +
+  geom_vline(xintercept = log(best_lambda_ridge, base = 10), linetype = &quot;dashed&quot;, color = &quot;blue&quot;) +
+  labs(
+    title = &quot;Ridge Regression Path&quot;,
+    x = &quot;log(lambda)&quot;,
+    y = &quot;Coefficient Estimate&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<div id="ridge-regression-path-plot" class="section level3">
+<h3>Ridge Regression Path Plot:</h3>
+<ul>
+<li><p><strong>How to Read:</strong></p>
+<ul>
+<li>Each line represents how a predictor’s coefficient changes as $ () $
+varies. The dashed blue line marks the optimal $ $ determined by
+cross-validation.</li>
+</ul></li>
+<li><p><strong>Key Patterns:</strong></p>
+<ul>
+<li>As $ $ increases (lower $ () $), all coefficients shrink closer to
+zero but never exactly zero. Strong predictors like tmax and tmin retain
+larger coefficients even at high regularization levels.</li>
+<li>Ridge regression retains all predictors in the model, contrasting
+LASSO, where less significant predictors are eliminated.</li>
+</ul></li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="elastic-net" class="section level2">
+<h2>Elastic net</h2>
+<p>Elastic Net is a regularization method that combines the properties
+of both Ridge and LASSO regression. It adds a penalty term that is a
+weighted combination of $ L_1 $ (LASSO) and $ L_2 $ (Ridge) penalties.
+The optimization problem is formulated as:</p>
+<p><span class="math display">\[
+\frac{1}{2n} \sum_{i=1}^{n} \left( y_i - \beta_0 - \sum_{j=1}^{p} x_{ij}
+\beta_j \right)^2
++ \lambda \left( \alpha \sum_{j=1}^{p} |\beta_j| + \frac{1 - \alpha}{2}
+\sum_{j=1}^{p} \beta_j^2 \right)
+\]</span></p>
+<p>where:</p>
+<ul>
+<li>$ $ is the regularization strength.</li>
+<li>$ $ controls the balance between the $ L_1 $ and $ L_2 $ penalties
+($ = 1 $ is equivalent to LASSO, $ = 0 $ is equivalent to Ridge, for
+this analysis I have seted $ $ to be 0.5, thus could balance between
+Lasso and Ridge). Elastic Net is particularly useful when there are
+correlated predictors, as it combines the variable selection feature of
+LASSO with Ridge’s ability to handle multicollinearity.</li>
+</ul>
+<hr />
+<p><strong>Comparison of Elastic Net, LASSO, and Ridge:</strong></p>
+<ul>
+<li><p><strong>Similarities:</strong></p>
+<ul>
+<li>All are regularization techniques to prevent overfitting and improve
+model generalization.</li>
+<li>All require tuning of the $ $ parameter to control regularization
+strength.</li>
+</ul></li>
+<li><p><strong>Differences:</strong></p>
+<ul>
+<li>Elastic Net combines $ L_1 $ and $ L_2 $ penalties, while LASSO uses
+only $ L_1 $ and Ridge uses only $ L_2 $.</li>
+<li>Elastic Net is more robust in scenarios with correlated predictors
+compared to LASSO and Ridge.</li>
+</ul></li>
+</ul>
+<pre class="r"><code># Standardize the data to ensure all variables are on the same scale
+x &lt;- scale(x)  # Standardize predictor variables
+y &lt;- scale(y)  # Standardize response variable
+
+# Fit Elastic Net model with a custom lambda range
+lambda &lt;- 10^seq(3, -2, length = 100)  # Define a wide range of lambda values
+elastic_fit &lt;- glmnet(x, y, alpha = 0.5, lambda = lambda)  # Fit Elastic Net model with alpha = 0.5
+
+# Perform cross-validation to find the optimal lambda
+cv_elastic &lt;- cv.glmnet(x, y, alpha = 0.5)  # Perform cross-validation
+best_lambda_elastic &lt;- cv_elastic$lambda.min  # Extract the optimal lambda value
+
+# Predict and evaluate Elastic Net with the optimal lambda
+elastic_predictions &lt;- predict(cv_elastic, s = &quot;lambda.min&quot;, newx = x)  # Predict using the optimal lambda
+elastic_mse &lt;- mean((y - elastic_predictions)^2)  # Calculate mean squared error (MSE)
+
+
+# Extract Elastic Net coefficients across the lambda path
+elastic_path_df &lt;- as.data.frame(as.matrix(elastic_fit$beta)) %&gt;%
+  rownames_to_column(var = &quot;term&quot;) %&gt;%  # Extract variable names from rownames
+  pivot_longer(-term, names_to = &quot;lambda&quot;, values_to = &quot;estimate&quot;) %&gt;%  # Convert wide to long format
+  mutate(lambda = as.numeric(gsub(&quot;s&quot;, &quot;&quot;, lambda)),  # Remove &quot;s&quot; prefix from lambda names
+         log_lambda = log(lambda, base = 10))        # Compute log(lambda)
+
+# Plot Elastic Net regularization path
+ggplot(elastic_path_df, aes(x = log_lambda, y = estimate, color = term)) +
+  geom_line() +  # Add lines for each coefficient&#39;s path
+  scale_x_reverse() +  # Reverse the x-axis to display lambda from large to small
+  labs(
+    title = &quot;Elastic Net Regularization Path&quot;,  # Title of the plot
+    x = &quot;log(lambda)&quot;,  # X-axis label
+    y = &quot;Coefficient Estimate&quot;  # Y-axis label
+  ) +
+  theme_minimal()  # Apply a minimal theme to the plot</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div id="elastic-net-regularization-path-plot" class="section level3">
+<h3>Elastic Net Regularization Path Plot</h3>
+<ul>
+<li><p><strong>How to Read:</strong></p>
+<ul>
+<li>Each line represents how a predictor’s coefficient changes as $ () $
+varies.</li>
+</ul></li>
+<li><p><strong>Key Patterns:</strong></p>
+<ul>
+<li>Strong predictors like tmax and tmin grow larger as $ () $
+decreases, indicating higher importance.</li>
+<li>Weak predictors like landcover and prcp remain near zero across most
+$ () $ values.</li>
+<li>Elastic Net balances variable selection and coefficient shrinkage,
+retaining weaker predictors without fully eliminating them.</li>
+</ul></li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="models-representations-conclusion" class="section level2">
+<h2>Models representations &amp; Conclusion</h2>
+<pre class="r"><code># Extract coefficients for each model and convert them to data frames
+lasso_coeff_df &lt;- as.data.frame(as.matrix(coef(cv_lasso, s = &quot;lambda.min&quot;))) %&gt;%
+  rownames_to_column(var = &quot;term&quot;) %&gt;%
+  rename(lasso_coeff = 2)
+
+ridge_coeff_df &lt;- as.data.frame(as.matrix(coef(cv_ridge, s = &quot;lambda.min&quot;))) %&gt;%
+  rownames_to_column(var = &quot;term&quot;) %&gt;%
+  rename(ridge_coeff = 2)
+
+elastic_coeff_df &lt;- as.data.frame(as.matrix(coef(cv_elastic, s = &quot;lambda.min&quot;))) %&gt;%
+  rownames_to_column(var = &quot;term&quot;) %&gt;%
+  rename(elastic_net_coeff = 2)
+
+# Merge the three data frames by the &quot;term&quot; column to create a comparison table
+comparison_df &lt;- lasso_coeff_df %&gt;%
+  full_join(ridge_coeff_df, by = &quot;term&quot;) %&gt;%
+  full_join(elastic_coeff_df, by = &quot;term&quot;)
+
+# Print the comparison table
+print(comparison_df)</code></pre>
+<pre><code>##          term   lasso_coeff   ridge_coeff elastic_net_coeff
+## 1 (Intercept)  2.276174e-02  2.359230e-02      2.204726e-12
+## 2        tmax  4.893500e-04  4.002705e-04      4.031869e-01
+## 3        tmin -6.200271e-05  2.877056e-05     -4.672853e-02
+## 4        prcp  4.614017e-05  3.790017e-05      2.935173e-02
+## 5        snow -1.556586e-04 -1.533098e-04     -1.762796e-01
+## 6        snwd -4.810781e-05 -4.643720e-05     -2.276618e-01
+## 7   landcover  3.960780e-06  5.503963e-06      8.052730e-03</code></pre>
+<pre class="r"><code># Display the comparison table in a nicely formatted way (optional)
+comparison_df %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">lasso_coeff</th>
+<th align="right">ridge_coeff</th>
+<th align="right">elastic_net_coeff</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.0227617</td>
+<td align="right">0.0235923</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">tmax</td>
+<td align="right">0.0004894</td>
+<td align="right">0.0004003</td>
+<td align="right">0.4031869</td>
+</tr>
+<tr class="odd">
+<td align="left">tmin</td>
+<td align="right">-0.0000620</td>
+<td align="right">0.0000288</td>
+<td align="right">-0.0467285</td>
+</tr>
+<tr class="even">
+<td align="left">prcp</td>
+<td align="right">0.0000461</td>
+<td align="right">0.0000379</td>
+<td align="right">0.0293517</td>
+</tr>
+<tr class="odd">
+<td align="left">snow</td>
+<td align="right">-0.0001557</td>
+<td align="right">-0.0001533</td>
+<td align="right">-0.1762796</td>
+</tr>
+<tr class="even">
+<td align="left">snwd</td>
+<td align="right">-0.0000481</td>
+<td align="right">-0.0000464</td>
+<td align="right">-0.2276618</td>
+</tr>
+<tr class="odd">
+<td align="left">landcover</td>
+<td align="right">0.0000040</td>
+<td align="right">0.0000055</td>
+<td align="right">0.0080527</td>
+</tr>
+</tbody>
+</table>
+<p>From the previous table, we may summary the three optimal models
+suggested by each algorithms:</p>
+<hr />
+<div id="general-summary" class="section level3">
+<h3>General Summary:</h3>
+<ul>
+<li><p><strong>Key Observations:</strong></p>
+<ul>
+<li>tmax is the most important predictor with the largest positive
+impact across all models.</li>
+<li>tmin and snow consistently show moderate negative impacts.</li>
+<li>landcover, while statistically significant in the linear model, has
+minimal or negligible contributions in the optimized models.</li>
+</ul></li>
+<li><p><strong>Conclusion:</strong></p>
+<ul>
+<li>Removing landcover simplifies the model without affecting accuracy
+or interpretability.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="final-results" class="section level1">
+<h1>Final results</h1>
+<pre class="r"><code>predict_data_opt &lt;- predict_data_final |&gt; select(-landcover)
+predict_data_opt$obs_ratio &lt;- predict(lm_model, newdata = predict_data_final)</code></pre>
+<pre class="r"><code>grid_predictions_final &lt;- st_join(ny_grid, st_as_sf(predict_data_opt, coords = c(&quot;lon&quot;, &quot;lat&quot;), crs = st_crs(ny_grid))) |&gt;
+  group_by(x) |&gt;
+  summarise(
+    prob_sum = sum(obs_ratio, na.rm = TRUE), 
+    prob_mean = mean(obs_ratio, na.rm = TRUE)  
+  ) |&gt; 
+  ungroup()</code></pre>
+<pre class="r"><code>ggplot() +
+  geom_sf(data = ny_boundary, fill = NA, color = &quot;black&quot;) +  
+  geom_sf(data = grid_predictions_final, aes(fill = prob_sum), color = NA, alpha = 0.8) +
+  scale_fill_viridis_c(option = &quot;plasma&quot;, name = &quot;Probability Sum&quot;) + 
+  labs(
+    title = &quot;Heatmap of Predicted Observation Ratios&quot;,
+    x = &quot;Longitude&quot;,
+    y = &quot;Latitude&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="modeling_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

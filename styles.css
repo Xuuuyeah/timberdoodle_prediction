@@ -1,0 +1,124 @@
+/* Global styles */
+body {
+    font-family: "Open Sans", Arial, sans-serif; /* Modern font similar to eBird */
+    font-size: 16px; /* Standard size */
+    line-height: 1.8; /* Improved readability */
+    background-color: #f7f8fa; /* Light background color */
+    color: #333; /* Dark gray text color for contrast */
+    margin: 0;
+    padding: 0;
+    text-align: justify; /* Justify all text globally */
+}
+
+/* Heading styles */
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Open Sans", Arial, sans-serif; /* Consistent font for headings */
+    color: #2e4a62; /* Dark blue for headings */
+    margin: 0 0 10px;
+    font-weight: 600;
+    text-align: left; /* Keep headings left-aligned */
+}
+
+/* Links */
+a {
+    color: #0073cf; /* Bright blue link color */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #004a9f; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+/* Buttons */
+button {
+    font-family: "Open Sans", Arial, sans-serif;
+    background-color: #0073cf;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #004a9f;
+}
+
+/* Sidebar styles */
+.sidebar {
+    background-color: #3a4e5f; /* Navy blue */
+    color: white;
+    padding: 20px;
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    overflow-y: auto;
+}
+
+.sidebar a {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.sidebar a:hover {
+    color: #d1e4ff; /* Lighter blue */
+}
+
+/* Main content area */
+.main-content {
+    margin-left: 270px; /* Leaves room for sidebar */
+    padding: 20px;
+}
+
+/* Cards or containers */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: justify; /* Justify text inside cards */
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left; /* Keep table data left-aligned */
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f0f4f8; /* Light blue-gray */
+    font-weight: bold;
+}
+
+table tr:hover {
+    background-color: #f7faff; /* Subtle highlight on hover */
+}
+
+/* Charts and visuals */
+.chart-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: justify; /* Justify text in chart containers */
+}
+
+/* Footer */
+footer {
+    background-color: #3a4e5f; /* Navy blue */
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 20px;
+}

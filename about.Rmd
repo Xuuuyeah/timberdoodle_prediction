@@ -1,0 +1,64 @@
+---
+title: "About Us"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+We are a team of five MS students in biostatistics at the Columbia University Mailman School of Public Health. We come from a variety of academic backgrounds, and each of us applied our skill set to explore the question on birds!
+
+
+
+:::: {style="display: flex;"}
+
+::: {.col}
+
+```{r, include = FALSE}
+# knitr::include_graphics("./pictures/authors/gj_headshot.jpg")
+# how you would add a photo
+```
+
+**[Xiaoni Xu](https://xiaonixu.github.io/)**
+
+*Biostatistics, Theory & Methods Track*
+
+:::
+
+::: {.col}
+
+
+
+**Zhengyong Chen**
+
+*Biostatistics, Theory & Methods Track*
+
+:::
+
+::: {.col}
+
+**Yiran Xu**
+
+*Biostatistics, Theory & Methods Track*
+
+:::
+
+::: {.col}
+
+**Boxiang Tang**
+
+*Biostatistics, Theory & Methods Track*
+
+:::
+
+::: {.col}
+
+**Wenjie Xu**
+
+*Biostatistics, Public Health Data Science Track*
+
+:::
+
+::::
+
+You can go [home](index.html).

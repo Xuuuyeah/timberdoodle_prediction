@@ -1,0 +1,334 @@
+---
+title: "Data Integration"
+author: "Yiran Xu"
+date: "2024-11-25"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, message=FALSE}
+library(geodata)
+library(dplyr)
+library(parallel)
+library(pbapply)
+library(geosphere)
+library(lubridate)
+library(readr)
+library(tidyverse)
+library(sf)
+library(knitr)
+library(kableExtra)
+```
+
+# 1. Introduction
+
+The overall goal of this process is to get the weather information and land cover data at the places where observations occur, as these are hypothetical factors that may influence the distribution of timberdoodles. We use NOAA data to get the weather information (see details at **[https://www.noaa.gov/](https://www.noaa.gov/))**, an use land cover data from **[Multi-Resolution Land Characteristics (MRLC) Consortium](https://www.mrlc.gov/)**.
+
+However, the weather data are recorded by weather stations, which are not necessarily at the same place with bird observations. Therefore, we assign the nearest weather station within 50km to the places of observation. To realize the goal. We first merge the weather records from each weather station from 2019-2024 with the dataset indicating the location of each weather station by station id. Then we add the weather records from the nearest weather station to the bird observation dataset by date and location (i.e. latitude & longitude).
+
+For land cover data, we use a tif file. To integrate the land cover data from the GeoTIFF raster file into the observation CSV file, the observation dataset was first converted into an sf spatial object using its longitude and latitude columns. Next, the coordinate reference system (CRS) of the sf object was aligned with the CRS of the raster file to ensure compatibility. Then, land cover values were extracted from the raster based on the observation coordinates. Finally, these extracted land cover values were added as a new column to the original dataset, which was then saved as a CSV file for further analysis.
+
+# 2. Add weather data
+
+We started from the data like this:
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+cleaned_raw_data = "data/environmental_var/zf_filtered.csv"
+zf_filtered_df = read_csv(cleaned_raw_data)  # the file will take a while to load
+
+zf_filtered_df = zf_filtered_df |>
+  select(-last_edited_date, -country, -country_code, -state_code, -county_code, -iba_code, bcr_code, -locality_id, -locality_type, -time_observations_started, -sampling_event_identifier, -protocol_code, -project_code, -effort_area_ha, -group_identifier, -trip_comments, -scientific_name, -breeding_code, -breeding_category, -behavior_code, -age_sex, -species_observed, year, -day_of_year)
+
+head(zf_filtered_df) |>
+  kable(digits = 3) |>
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(width = "100%", height = "300px")
+```
+
+For weather data, we used two datasets: 
+
+* 1) **[Yearly weather records data](https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/)**: The daily weather records from each weather station, including tmax (max temperature in degree Celsius), tmin (min temperature in degree Celsius), prcp (precipitation), snow (snow in mm), snwd (snow depth in mm)) from 2019-2024;
+
+
+* 2) **[Station location data](https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt)**: A dataset match the station ids with locations (latitude, longitude) 
+
+### 1) Merge weather and location 
+
+Merge the observation location and the weather information with **[Yearly weather records data](https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/)**
+
+#### a) Extract NY stations 
+
+We use data from **[Station location data](https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt)**
+To reduce the time needed for matching process, we should filter station only in NY state from all stations. 
+
+Part of the data is shown below:
+```{r warning=FALSE}
+stations_file = "data/environmental_var/ghcnd-stations.txt" 
+stations = read.table(stations_file, 
+                   header = FALSE, 
+                   sep = "",         
+                   fill = TRUE,     
+                   stringsAsFactors = FALSE)
+colnames(stations) = c("id", "latitude", "longitude", "elevation", "state")
+
+# Select the first five columns and assign column names
+ny_stations = stations[, 1:5] |>
+  filter(state == "NY") |>
+  mutate(latitude = as.numeric(latitude),
+         longitude = as.numeric(longitude))
+
+write.csv(ny_stations, "data/environmental_var/ny_stations.csv", row.names = FALSE)
+
+ny_stations |>
+  head() |>
+  kable(digits = 3)
+
+```
+
+
+#### b) Extract NY weather records 
+Extract NY weather records from NY weather stations from **[Yearly weather records data](https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/)**
+
+The filtered and combined weather records data looks like this:
+```{r echo=FALSE, message=FALSE}
+input_dir = "data/environmental_var/ghcnd_by_year"  
+ny_stations_file = "data/environmental_var/ny_stations.csv"  
+output_file = "data/environmental_var/ghcnd_by_year/filtered_combined_weather_19_24.csv"
+
+ny_stations = read_csv(ny_stations_file)
+station_ids = unique(ny_stations$id) 
+
+filter_station_data = function(file, station_ids) {
+  yearly_data = read_csv(file, col_names = c("id", "date", "element", "value", 
+                                              "m_flag", "q_flag", "s_flag", "obs_time"))
+  
+  filtered_data = yearly_data %>%
+    filter(id %in% station_ids)
+  
+  return(filtered_data)
+}
+
+files = list.files(input_dir, pattern = "\\.csv\\.gz$", full.names = TRUE)
+
+combined_data = purrr::map_df(files, filter_station_data, station_ids = station_ids)
+
+combined_data |>
+  head() |>
+  kable(digits = 3)
+```
+
+#### c) Data tidying and cleaning: transfer the numbers to their correct units. Then, join location data and weather data
+```{r}
+combined_data_wider = combined_data |>
+  select(-m_flag, -q_flag, -s_flag, -obs_time) |>
+  pivot_wider(
+    names_from = element,          
+    values_from = value) |>
+  janitor::clean_names() |>
+  mutate(prcp = prcp / 10,
+         tmax = tmax / 10,
+         tmin = tmin / 10,
+         t_avg = (tmin + tmax) / 2,
+         date = as.Date(as.character(date), format = "%Y%m%d"))
+
+write_csv(combined_data_wider, output_file)
+
+merged_coor_station = combined_data_wider %>%  
+  left_join(ny_stations, by = c("id" = "id")) %>%
+  select(id, date, latitude, longitude, tmax, tmin, prcp, snow, snwd, t_avg) 
+
+merged_coor_station |>
+  head() |>
+  kable(digits = 3)
+
+```
+
+#### d) Quality control
+
+Not all weather station has records on every single day. Here we first filter out records with more than 1 (included) NA value in 4 weather data we care about: prcp, snow, snwd, t_avg (calculated by average min and max temperature, will be NA if either tmin or tmax is NA)
+```{r}
+filtered_coor_station = merged_coor_station %>%
+  mutate(
+    na_count = rowSums(is.na(across(c(prcp, snow, snwd, t_avg)))) 
+  ) %>%
+  filter(na_count <= 0) %>%  
+  select(-na_count) 
+```
+
+### 2) Assign nearest station
+
+#### a) Define function
+
+Assign nearest weather stations that have records on that specific day to each observation locations.
+
+As not all observation places have weather station nearby, and the weather is sensitive to location, we won't assign a weather station to the observation places if there is no weather station within 50 km.
+
+```{r}
+find_nearest_station_with_date = function(obs_lat, obs_lon, obs_date, weather_data, max_distance_km) {
+  daily_weather = weather_data %>%
+    filter(date == obs_date)
+  
+  if (nrow(daily_weather) == 0) {
+    return(list(
+      nearest_station = NA,
+      distance = NA,
+      note = "no record available",
+      tmax = NA,
+      tmin = NA,
+      prcp = NA,
+      snow = NA,
+      snwd = NA,
+      t_avg = NA
+    ))
+  }
+  
+  weather_coords = cbind(daily_weather$longitude, daily_weather$latitude)
+  obs_coords = matrix(c(obs_lon, obs_lat), nrow = 1)
+  distances = distHaversine(weather_coords, obs_coords) 
+  
+  min_distance = min(distances, na.rm = TRUE) / 1000 
+  nearest_index = which.min(distances)
+  
+  if (min_distance > max_distance_km) {
+    return(list(
+      nearest_station = NA,
+      distance = min_distance,
+      note = "no record available",
+      tmax = NA,
+      tmin = NA,
+      prcp = NA,
+      snow = NA,
+      snwd = NA,
+      t_avg = NA
+    ))
+  }
+  
+  nearest = daily_weather[nearest_index, ]
+  return(list(
+    nearest_station = nearest$id,
+    distance = min_distance,
+    note = "record available",
+    tmax = nearest$tmax,
+    tmin = nearest$tmin,
+    prcp = nearest$prcp,
+    snow = nearest$snow,
+    snwd = nearest$snwd,
+    t_avg = nearest$t_avg
+  ))
+}
+
+```
+
+#### b) Apply function 
+This function applies GPU to accelerate the process. Observation records with weather information looks like this:
+```{r eval=FALSE}
+max_distance_km = 50
+
+num_cores = detectCores() - 2 
+cl = makeCluster(num_cores)
+
+process_observation = function(row_index, obs_data, weather_data, max_distance_km) {
+  obs = obs_data[row_index, ] 
+  weather_info = find_nearest_station_with_date(
+    obs_lat = obs$latitude,
+    obs_lon = obs$longitude,
+    obs_date = obs$observation_date,
+    weather_data = weather_data,
+    max_distance_km = max_distance_km
+  )
+  cbind(obs, as.data.frame(weather_info))
+}
+
+clusterExport(cl, c("find_nearest_station_with_date", "filtered_coor_station", "zf_filtered_df", "max_distance_km", "process_observation"))
+clusterEvalQ(cl, {
+  library(dplyr)
+  library(geosphere)
+})
+
+results = pblapply(
+  seq_len(nrow(zf_filtered_df)), 
+  function(i) {
+    process_observation(i, obs_data = zf_filtered_df, weather_data = filtered_coor_station, max_distance_km = max_distance_km)
+  },
+  cl = cl
+)
+
+stopCluster(cl)
+
+zf_with_weather = bind_rows(results)
+
+write_csv(zf_with_weather, "data/zf_with_weather.csv")
+
+head(zf_with_weather) |>
+  kable(digits = 3)
+```
+
+# 3. Add Land Cover Data
+
+The data was retrieved from **[Multi-Resolution Land Characteristics (MRLC) Consortium](https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover)**, data from 2023 was used.
+
+Observation records with weather and land cover information looks like this:
+```{r}
+zf_with_weather = read.csv("data/environmental_var/zf_with_weather.csv")
+zf_with_weather$lon = zf_with_weather$longitude
+zf_with_weather$lat = zf_with_weather$latitude
+
+landcover_raw = rast("data/environmental_var/lc_rast.tif")
+
+zf_with_weather_sf = st_as_sf(zf_with_weather, coords = c("longitude", "latitude"), crs = 4326)
+
+if (!st_crs(zf_with_weather_sf) == crs(landcover_raw)) {
+zf_with_weather_sf = st_transform(zf_with_weather_sf, crs(landcover_raw))
+}
+
+
+zf_with_weather_vect = vect(zf_with_weather_sf)
+
+extracted_values = terra::extract(landcover_raw, zf_with_weather_vect)
+
+zf_with_weather_sf$landcover = extracted_values[,2] 
+
+write.csv(st_drop_geometry(zf_with_weather_sf), "data/environmental_var/zf_with_weather_landcover.csv", row.names = FALSE)
+
+head(st_drop_geometry(zf_with_weather_sf)) |>
+  kable(digits = 3)
+```
+
+Note: the categorical land cover variables are presented as numbers. The detailed classification description is shown below, and the source can be found **[here](https://www.mrlc.gov/data/legends/national-land-cover-database-class-legend-and-description)**: 
+```{r}
+landcover_classes = data.frame(
+  Code = c('11', '12', '21', '22', '23', '24', '31', '41', '42', '43', 
+           '52', '71', '81', '82', '90', '95'),
+  Description = c(
+    'Open Water',
+    'Perennial Ice/Snow',
+    'Developed, Open Space',
+    'Developed, Low Intensity',
+    'Developed, Medium Intensity',
+    'Developed, High Intensity',
+    'Barren Land (Rock/Sand/Clay)',
+    'Deciduous Forest',
+    'Evergreen Forest',
+    'Mixed Forest',
+    'Shrub/Scrub',
+    'Grassland/Herbaceous',
+    'Pasture/Hay',
+    'Cultivated Crops',
+    'Woody Wetlands',
+    'Emergent Herbaceous Wetlands'
+  )
+)
+
+kable(landcover_classes, col.names = c("Landcover Code", "Landcover Description"),
+      caption = "Landcover Classification Table")
+
+```
+
+  

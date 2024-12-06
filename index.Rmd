@@ -1,0 +1,152 @@
+---
+title: "Where would you expect to see a woodcock?"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+> I heard one in the woods behind my apartment early this morning and I’ve never seen one in the wild before. Since all of the leaves on the ground are dead and dried, I’m worried that it’ll be really difficult for me to spot it due to its camouflage. I’m really eager to add it onto my life list so any suggestions on how to find this little fella would be much appreciated!  
+> — r/birdwatching, Reddit
+
+
+
+<figure style="text-align: center;">
+  <img src="images/amwo1.jpg" style="display: block; margin: auto; width: 75%;">
+  <figcaption style="font-size: 14px; color: #555;">American Woodcock (*Scolopax minor*) at Central Park, Oct 2024, &copy; Xiaoni Xu.</figcaption>
+</figure>
+
+
+<div style="display: flex; align-items: center; gap: 20px;">
+
+  <!-- Text Section -->
+  <div style="flex: 1; font-size: 16px; line-height: 1.6;">
+    As elusive as they might be, the American Woodcock (*Scolopax minor*) is famous for its unorthodox appearance, its captivating courtship flights at sunset, and its dance move on the internet. It is a species of shorebird in eastern United States that is sometimes encountered in urban parks.
+  </div>
+
+  <!-- Image Section -->
+  <div style="flex: 1; text-align: center;">
+    <img src="images/amwo_dance.gif" alt="The Woodcock Dance" style="width: 300px;">
+  </div>
+
+</div>
+
+
+
+For this project, we take a look at the observational data of all American Woodcock sightings on eBird, the biggest online public platform for birding observations in the United States. We attempted to visualize the occurrence of this species and build a prediction model to facilitate the process for one to find a woodcock by themselves.
+
+For general information about American Woodcocks, visit its [eBird page](https://ebird.org/species/amewoo). 
+
+
+
+Find more [about us](about.html).
+
+
+
+
+
+
+**American Woodcocks Observation in NY**
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+library(auk)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(lubridate)
+library(readr)
+library(sf)
+library(kableExtra)
+library(leaflet)
+```
+
+
+```{r, eval = FALSE}
+amwo <- "data/ebd_US-NY_amewoo_201901_202401_smp_relSep-2024.txt"
+amwo_samp <- "data/ebd_US-NY_amewoo_201901_202401_smp_relSep-2024_sampling.txt"
+observations <- read_ebd(amwo)
+checklists <- read_sampling(amwo_samp) 
+checklists_shared <- read_sampling(amwo_samp, unique = FALSE)
+checklists_unique <- auk_unique(checklists_shared, checklists_only = TRUE)
+checklists <- checklists |> filter(all_species_reported)
+observations <- observations |> filter(all_species_reported)
+observations <- observations %>%
+  filter(checklist_id %in% checklists$checklist_id)
+
+
+
+observations_selected <- 
+  observations |>
+  select(county, observation_count, county, locality_type, latitude, longitude, 
+         observation_date, time_observations_started, protocol_type, duration_minutes,
+         effort_distance_km, number_observers) |> 
+  filter(observation_count != "X") |> 
+  mutate(
+    observation_count = as.numeric(observation_count),
+    year = lubridate::year(as.Date(observation_date)),
+    month = lubridate::month(as.Date(observation_date)),
+    day = lubridate::day(as.Date(observation_date)),
+    season = case_when(
+      month %in% c(12, 1, 2) ~ "Winter",
+      month %in% c(3, 4, 5) ~ "Spring",
+      month %in% c(6, 7, 8) ~ "Summer",
+      month %in% c(9, 10, 11) ~ "Fall"),
+    time_of_day = case_when(
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) >= 5 &
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) < 12 ~ "Morning",
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) >= 12 &
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) < 17 ~ "Afternoon",
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) >= 17 &
+      as.numeric(format(as.POSIXct(time_observations_started, format = "%H:%M:%S"), "%H")) < 21 ~ "Evening",
+      TRUE ~ "Night")
+  )
+
+# Sample data (replace with observations_selected)
+observations_selected_clean <- observations_selected |> 
+  filter(!is.na(longitude) & !is.na(latitude))
+```
+
+
+```{r, message = FALSE}
+observations_selected = read_csv("data/observations_selected_clean.csv")
+
+# Define colors for four categories
+category_colors <- c(
+  "1" = "#5acc56", 
+  "2" = "#4daf4a",  
+  "3" = "#2d662b",  
+  ">3" = "#163315"  
+)
+
+# Function to assign colors based on categories
+custom_color <- function(count) {
+  ifelse(
+    count > 3, 
+    category_colors[">3"],  # Dark purple for counts >3
+    category_colors[as.character(count)]  # Use category-specific color for 1, 2, 3
+  )
+}
+
+# Render the interactive map
+leaflet(data = observations_selected) %>%
+  addTiles() %>%  # Add default OpenStreetMap tiles
+  addCircleMarkers(
+    ~longitude, ~latitude,  # Longitude and Latitude
+    radius = 3,            # Marker size
+    fillColor = ~custom_color(observation_count),  # Apply category colors
+    color = "grey",        # Grey outline for all markers
+    fillOpacity = 0.6,     # Set fill opacity for transparency
+    stroke = TRUE,         # Add borders to markers
+    weight = 0.5,          # Border thickness
+    popup = ~paste("Observation Count:", observation_count, "<br>",
+                   "Time:", substr(time_observations_started, 1, 5), "<br>",  # Extract HH:MM
+                   "Date:", observation_date)  # Add popup information
+  ) %>%
+  addLegend(
+    position = "bottomright",
+    colors = unname(category_colors),  # Colors for the legend
+    labels = names(category_colors),  # Labels for the categories
+    title = "Observation Count",
+    opacity = 1
+  )

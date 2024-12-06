@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Xiaoni Xu" />
+
+<meta name="date" content="2024-12-04" />
+
+<title>Report</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="data_wrangling.html">Data Wrangling</a>
+</li>
+<li>
+  <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="data_integration.html">Data Integration</a>
+</li>
+<li>
+  <a href="modeling.html">Modeling</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="mailto:&lt;xx2485@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/XiaoniXu/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Report</h1>
+<h4 class="author">Xiaoni Xu</h4>
+<h4 class="date">2024-12-04</h4>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>1. Introduction</h2>
+<p>American woodcock (<em>Scolopax minor</em>; hereinafter woodcock),
+one of the most common species of shorebirds in eastern North America
+(McAuley et al.), is an early successional habitat specialist whose
+populations are declining throughout their range (Bergian). Because it
+is one of the only shorebird species in North America that reside in
+habitats not adjacent to water during migration, the land mass of
+potential suitable habitats for this species is far greater than other
+water-dependent birds in Order Charadriiformes such as dunlin
+(<em>Calidris alpina</em>) or semipalmated plover (<em>Charadrius
+semipalmatus</em>). As a result, woodcocks are more easily stumbled upon
+in close proximity to human activities: during woodland hikes, county
+road drives, morning park jogs, or nighttime camps.</p>
+<p>Along with its significance of being an umbrella species - a
+representative of an ecosystem specifically for conservation purposes
+that protects other species within its ecosystem - the woodcock is also
+one of the highly sought-after shorebird species among naturalists and
+birders due to its appearance, behavior, and relatively difficulty of
+detection. In addition, its ‘dance’ moves has made it into an internet
+favorite when paired with a wide array of music on social media
+(Farley). Thus, it has become a curious inquiry to members of science
+community, policy makers, and the general public for the ecological,
+temporal, and spatial factors that may affect the chances one could
+encounter a woodcock in the wild.</p>
+<p>For this project, we demonstrated the observational data in various
+ways in response to scientific questions on detection of woodcocks,
+along with creating a prediction model using variables both included in
+the observational data and inferred using latitude and longitude
+information. Our charts showed the power of citizen science data and the
+multitude of analyses that the data enables researchers and scientists
+to explore and answer new questions.</p>
+</div>
+<div id="data-methods" class="section level2">
+<h2>2. Data &amp; Methods</h2>
+<div id="ebird-data" class="section level3">
+<h3>2.1 eBird data</h3>
+<p>eBird (ebird.org) is an online citizen science platform for bird
+observations developed by Cornell Lab of Ornithology (Sullivan et al.).
+Users can submit observations in the form of a birding checklist, which
+records the time, distance, duration, location, species observed, and
+species counts for each birding outing. With over 35,000 checklists
+submitted daily, eBird has congregated a sizeable amount of data capable
+of allowing comprehensie data analysis in various field within or
+adjacent to ornithology.</p>
+<p>The observational and sampling data in the form of individual
+checklists on the platform, eBird Basic Dataset (EBD), is publicly
+available and is downloaded after submitting a request to download the
+data of woodcocks. Due to the large file size and limited CPU powers,
+the dataset is limited to observations from January 2019 to January 2024
+in New York State.</p>
+<p>eBird data is then processed using the <code>auk</code> package
+(Strimas-Mackey et al.) for data visualization and processing. The .txt
+files were loaded into R, and the shared checklists were collapsed to
+eliminate replicated observations. The non-complete checklists were then
+filtered to ensure data cleaniness. The zero-filling method is then used
+to infer non-detections using the sampling data. Some of the variables
+were transformed for modeling: time is converted to a decimal value, and
+a variable for speed is created. Checklists too long or too fast were
+eliminated.</p>
+</div>
+<div id="data-integration---add-environmental-variables"
+class="section level3">
+<h3>2.2 Data Integration - Add Environmental Variables</h3>
+<p>The overall goal of this process is to get the weather information
+and land cover data at the places where observations occur, as these are
+hypothetical factors that may influence the distribution of
+timberdoodles, and will be used in our model. We use weather data from
+National Oceanic and Atmospheric Administration (NOAA) (see details at
+<strong><a
+href="https://www.noaa.gov/">https://www.noaa.gov/</a>)</strong>, an use
+land cover data from<strong><a
+href="https://www.mrlc.gov/">Multi-Resolution Land Characteristics
+(MRLC) Consortium</a></strong>.</p>
+<p>For weather data we used two datasets:</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li><strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/">Yearly
+weather records data</a></strong>: The daily weather records from each
+weather station, including tmax (max temperature in degree Celsius),
+tmin (min temperature in degree Celsius), prcp (precipitation), snow
+(snow in mm), snwd (snow depth in mm)) from 2019-2024; Though may other
+kinds of weather information are included, we don’t consider them in our
+model.</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li><strong><a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">Station
+location data</a></strong>: A dataset match the station ids with
+locations (latitude, longitude)</li>
+</ol>
+<p>However, the weather data are recorded by weather stations, which are
+not necessarily at the same place with bird observations. Therefore, we
+assign the nearest weather station within 50 km to the places of
+observation. To realize the goal. We first merge the weather records
+from each weather station from 2019-2024 with the dataset indicating the
+location of each weather station by station id. Then we added the
+weather records from the nearest weather station to the bird observation
+dataset by date and location (i.e. latitude &amp; longitude).</p>
+<p>For land cover data, we use a tif file. To integrate the land cover
+data from the GeoTIFF raster file into the observation CSV file, the
+observation dataset was first converted into an sf spatial object using
+its longitude and latitude columns. Next, the coordinate reference
+system (CRS) of the sf object was aligned with the CRS of the raster
+file to ensure compatibility. Then, land cover values were extracted
+from the raster based on the observation coordinates. Finally, these
+extracted land cover values were added as a new column to the original
+dataset, which was then saved as a CSV file for further
+analysis.</p></li>
+</ul>
+</div>
+</div>
+<div id="modeling" class="section level2">
+<h2>3. Modeling</h2>
+<div id="data-preporecessing-and-modeling" class="section level3">
+<h3>3.1 Data preporecessing and modeling</h3>
+<p>This analysis used eBird data with environmental variables to
+calculate the observation ratio (obs_ratio) for modeling. Average
+temperature (t_avg) and snowfall (snow) were grouped into intervals (1°C
+and 5 units, respectively), with flag variables created for each range.
+Observations within the same flag were counted and normalized by the
+total observations, providing the proportion of American Woodcock
+sightings under specific conditions.</p>
+<p>After grouping and flagging the data, a linear model was used to fit
+the data, with environmental variables as the predictors and obs_ratio
+as the target variable.</p>
+</div>
+<div id="preiction-data-simulation" class="section level3">
+<h3>3.2 Preiction data simulation</h3>
+<p>For continuous variables such as tmax, tmin, snow, and snwd, we
+fitted their distributions based on the original data and generated
+simulated prediction data within the 95% confidence interval. Realistic
+constraints were also incorporated, such as ensuring tmax is always
+greater than tmin, southern regions having higher temperatures than
+northern regions, and snowfall being lower in southern areas compared to
+the north.</p>
+<p>Within each generated grid, 1,000 data points were simulated, with
+their latitude and longitude constrained to lie within the respective
+grid boundaries. Using the previously trained regression model, we
+predicted the observation ratio (obs_ratio) for each point and summed
+these values to obtain the total observation probability for each grid.
+Additionally, realistic landcover data were assigned to each grid based
+on its geographic location, further enhancing the accuracy and realism
+of the simulated data to align with actual conditions.</p>
+</div>
+<div id="model-optimization" class="section level3">
+<h3>3.3 Model Optimization</h3>
+<p>After constructing the full linear model, it was observed that the
+model contained an excessive number of predictors, which could lead to
+potential overfitting. To address this issue and optimize the final
+model, three regularization methods—LASSO, Ridge, and Elastic Net—were
+employed to perform predictor selection.</p>
+<p>Upon identifying the optimized models recommended by each of the
+three methods and comparing the weights assigned to all retained
+predictors, we found that the predictor <em>landcover</em>, while
+initially deemed significant in the summary results of the full linear
+model, was assigned near-zero weights across all three optimization
+methods. This indicates that <em>landcover</em> contributes minimally to
+the model. Therefore, to maintain model simplicity, it is recommended to
+exclude this predictor.</p>
+</div>
+<div id="griding-and-heating-map-ploting" class="section level3">
+<h3>3.4 Griding and heating map ploting</h3>
+<p>We applied grid operations to the map of New York State, dividing it
+into grids to more precisely identify bird observation locations and
+simulate real-world conditions. After multiple adjustments, a grid size
+of 0.1 was selected as the optimal scale.The final observation
+probabilities of the American woodcock are displayed in the form of a
+heatmap.</p>
+</div>
+</div>
+<div id="results" class="section level2">
+<h2>4. Results</h2>
+<p>Preliminary exploratory analysis were carried out to answer some
+common questions related to woodcock detection within New York State. By
+creating a <code>season</code> factor and creating a bar chart showing
+the number of checklists per season, we visualized the total amount and
+the difference in number of observations of woodcocks each season. The
+observation counts were also categorized by time of day to see if there
+is any significant pattern in time of the day for detection. Then, a
+chi-squared test is run to test whether the differences between season
+and day times are significant. Also, the number of observations is also
+summarized by county.</p>
+<p>We were able to observe a significant</p>
+</div>
+<div id="conclusion-and-discussion" class="section level2">
+<h2>5. Conclusion and Discussion</h2>
+<p>Overall, we harnessed the power of citizen science data to both
+answer various questions on sightings of a rather secrete question and
+create a comprehensive prediction model using various temporal and
+spatial factors for the abundance in any given place in New York state.
+We used a charismatic species that is well-known in naturalist and
+birder community as well as anyone using social media as an example to
+display our methods in exploring such citizen science data; the same
+visualizations and analyses that we demonstrated can be easily
+duplicated for other species and observations, or even non-wildlife data
+such as occurrence of a disease or the tracking of all crimes in a
+city.</p>
+<p>where effort data are not available, in some situations occupancy
+models may be a more robust modelling approach</p>
+<p>analysing complete checklists and using effort variables as
+covariates made the largest difference to the model quality</p>
+<p>the raw data, the volume of data, the model type and the modelling
+objective will all affect the relative benefit of the data processing
+steps that we describe. (Johnston et al.)</p>
+<p>Data selection has been, and will always be a</p>
+<p>One possibility is that checklist submission might be driven by the
+availability of public green spaces where birders are attracted (Lopez
+et al.)</p>
+<p>road density to be negatively associated with the sampling intensity
+across multiple taxa (Mair and Ruete)</p>
+<p>how selected sampling can lead to incorrect inferences about the
+relationship between variables of interest (Grade et al.)</p>
+<p>Within the scope of time and the previous background and experience
+in computational and ornithological knowledge, we were able to uncover a
+plethora of results that would otherwise well hidden inside the data
+set. However, a deeper dive into the more fine-tuned ecology and
+micro-habitats of the woodcock (or other species that reside in
+successional habitats that favor areas with more urban development) is
+needed to provide enough precision for the prediction model suitable for
+ornithological research.</p>
+</div>
+<div id="references" class="section level2">
+<h2>5. References</h2>
+<p>Berigan, L. A. (2024). <em>Full Annual Cycle Analysis of American
+Woodcock (Scolopax minor) Distribution, Habitat Use, and Migration
+Ecology.</em> (PhD thesis). The University of Maine. Retrieved from [<a
+href="https://digitalcommons.library.umaine.edu/etd/3941"
+class="uri">https://digitalcommons.library.umaine.edu/etd/3941</a>].</p>
+<p>Farley, K. E. (2022). <em>Habitat selection and consequences for
+American woodcock in urban landscapes.</em> (PhD thesis). Rutgers
+University - Graduate School - Newark. <a
+href="https://doi.org/10.7282/t3-n223-pn60"
+class="uri">https://doi.org/10.7282/t3-n223-pn60</a>. Retrieved from [<a
+href="https://rucore.libraries.rutgers.edu/rutgers-lib/67482/"
+class="uri">https://rucore.libraries.rutgers.edu/rutgers-lib/67482/</a>].</p>
+<p>McAuley, D. G., Keppie, D. M., &amp; Whiting Jr., R. M. (2020).
+<em>American Woodcock (Scolopax minor).</em> In S. M. Billerman, B. K.
+Keeney, P. G. Rodewald, &amp; T. S. Schulenberg (Eds.), <em>Birds of the
+World.</em> Cornell Lab of Ornithology. <a
+href="https://doi.org/10.2173/bow.amewoo.01"
+class="uri">https://doi.org/10.2173/bow.amewoo.01</a>. Retrieved from
+[<a
+href="https://birdsoftheworld.org/bow/species/amewoo/1.0/introduction"
+class="uri">https://birdsoftheworld.org/bow/species/amewoo/1.0/introduction</a>].</p>
+<p>National Centers for Environmental Information. (2024). <em>Global
+Historical Climatology Network (GHCN).</em> National Centers for
+Environmental Information. Retrieved from [<a
+href="https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/"
+class="uri">https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/</a>].</p>
+<p>Strimas-Mackey, M., Miller, E., &amp; Hochachka, W. (2023). <em>auk:
+eBird Data Extraction and Processing with AWK.</em> Retrieved from [<a
+href="https://cornelllabofornithology.github.io/auk/"
+class="uri">https://cornelllabofornithology.github.io/auk/</a>].</p>
+<p>Sullivan, B. L., Wood, C. L., Iliff, M. J., Bonney, R. E., Fink, D.,
+&amp; Kelling, S. (2009). <em>eBird: A citizen-based bird observation
+network in the biological sciences.</em> Biological Conservation,
+142(10), 2282–2292. <a
+href="https://doi.org/10.1016/j.biocon.2009.05.006"
+class="uri">https://doi.org/10.1016/j.biocon.2009.05.006</a>. Retrieved
+from [<a
+href="https://www.sciencedirect.com/science/article/pii/S000632070900216X"
+class="uri">https://www.sciencedirect.com/science/article/pii/S000632070900216X</a>].</p>
+<p>U.S. Geological Survey. (2023). <em>National Land Cover Database
+(NLCD) 2023.</em> Multi-Resolution Land Characteristics Consortium.
+Retrieved from [<a
+href="https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover"
+class="uri">https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover</a>].</p>
+<div style="text-align: center;">
+<p><img src="images/amwo_dance.gif" alt="The Woodcock Dance" style="width:300px;"></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
